@@ -16,4 +16,10 @@
 /obj/project.assets.json
 /obj/project.nuget.cache
 /obj/Debug/net8.0/LegacyOrderService.GeneratedMSBuildEditorConfig.editorconfig
-/Tests/LegacyOrderService.Application.Tests/obj
+/Tests/LegacyOrderService.Application.Tests/objbin/
+obj/
+**/bin/
+**/obj/
+**/Debug/
+**/Release/
+
