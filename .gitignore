@@ -1,0 +1,19 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/LegacyOrderService/FileContentIndex
+/.vs/LegacyOrderService/CopilotIndices/17.14.1431.25910
+/.vs
+/obj/Release/net8.0
+/Tests/LegacyOrderService.Application.Tests/obj/Debug/net8.0
+/src/LegacyOrderService.Infrastructure/obj
+/src/LegacyOrderService.Domain/obj
+/src/LegacyOrderService.Application/obj
+/src/LegacyOrderService.Api/obj
+/obj
+/obj/LegacyOrderService.csproj.nuget.dgspec.json
+/obj/project.assets.json
+/obj/project.nuget.cache
+/obj/Debug/net8.0/LegacyOrderService.GeneratedMSBuildEditorConfig.editorconfig
+/Tests/LegacyOrderService.Application.Tests/obj
