@@ -1,25 +1,57 @@
+using LegacyOrderService.Api.Console;
+using LegacyOrderService.Api.Workers;
+using LegacyOrderService.Application.Commands.CreateOrder;
+using LegacyOrderService.Application.Interfaces;
+using LegacyOrderService.Application.Services;
+using LegacyOrderService.Infrastructure.Caching;
+using LegacyOrderService.Infrastructure.Persistence.Sqlite;
+using LegacyOrderService.Infrastructure.Resilience;
+using System.Text.Json.Serialization;
+using SQLitePCL;
+
+Batteries.Init();
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Controllers / JSON options
+builder.Services.AddControllers().AddJsonOptions(o =>
+{
+    o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Application & domain services
+builder.Services.AddSingleton<IOrderRepository, SqliteOrderRepository>();
+builder.Services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+builder.Services.AddSingleton<OrderProcessingChannel>();
+
+// Command handlers
+builder.Services.AddTransient<CreateOrderHandler>();
+
+// Infrastructure (HTTP + Polly)
+builder.Services.AddHttpClient("default")
+    .AddPolicyHandler(ResiliencePolicies.GetResiliencePolicy());
+
+// Caching
+builder.Services.AddSingleton<ICacheService, InMemoryCacheService>();
+
+// Hosted services: console UI + background worker
+builder.Services.AddHostedService<ConsoleInteractionService>(); // interactive console (like original)
+builder.Services.AddHostedService<OrderWorker>();               // background consumer from channel
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Minimal API: create order
+app.MapPost("/orders", async (CreateOrderCommand cmd, CreateOrderHandler handler, CancellationToken ct) =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    var created = await handler.Handle(cmd, ct);
+    return Results.Created($"/orders/{created.Id}", created);
+});
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
